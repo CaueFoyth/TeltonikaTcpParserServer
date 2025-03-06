@@ -1,0 +1,24 @@
+.{
+    .name = .TeltonikaTcpParserServer,
+    .version = "0.0.0",
+    .fingerprint = 0xa772869339b633a5, // Changing this has security and trust implications.
+    .minimum_zig_version = "0.14.0",
+
+    .dependencies = .{
+        // Se TeltonikaTcpParserServer_lib for uma dependência externa, adicione aqui.
+        // Exemplo:
+        // .TeltonikaTcpParserServer_lib = .{
+        //     .url = "https://example.com/TeltonikaTcpParserServer_lib.tar.gz",
+        //     .hash = "multihash-aqui",
+        // },
+    },
+
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        // Adicione outros arquivos ou diretórios se necessário, como:
+        // "LICENSE",
+        // "README.md",
+    },
+}
