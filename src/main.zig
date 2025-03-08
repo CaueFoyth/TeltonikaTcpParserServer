@@ -6,10 +6,10 @@ const server_lib = @import("server_lib");
 
 pub fn main() !void {
     // Configura e inicia o servidor
-    var server = try server_lib.TcpServer.init("127.0.0.1", 2202);
+    var server = try server_lib.TcpServer.init("0.0.0.0", 2202);
     defer server.deinit();
 
-    std.debug.print("Servidor escutando em 127.0.0.1:2202...\n", .{});
+    std.debug.print("Servidor rodando na porta 2202...\n", .{});
 
     // Usa o handler padrão ou um personalizado
     try server.acceptAndHandle(server_lib.defaultHandler);
