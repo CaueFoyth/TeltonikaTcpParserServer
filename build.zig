@@ -1,4 +1,4 @@
-const std = @import("std");
+const std: type = @import("std");
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});

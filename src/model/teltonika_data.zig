@@ -1,25 +1,25 @@
-pub const TeltonikaData = struct {
+const AvlData: type = @import("avl_data.zig").AvlData;
+
+pub const TeltonikaData: type = struct {
     imei: u64,
-    preamble: u32,
-    data_size: u32,
-    codec_id: u8,
-    number_data: u8,
-    crc16: u32,
-    number_data_2: u8,
-    timestamp: u64,
-    priority: u8,
+    preamble: ?u32,
+    data_size: ?u32,
+    codec_id: ?u8,
+    number_data: ?u8,
+    avl_data: AvlData,
+    crc16: ?u32,
+    number_data_2: ?u8,
 
     pub fn init(imei: u64) TeltonikaData {
         return TeltonikaData{
             .imei = imei,
-            .preamble = 0,
-            .data_size = 0,
-            .codec_id = 0,
-            .number_data = 0,
-            .crc16 = 0,
-            .number_data_2 = 0,
-            .timestamp = 0,
-            .priority = 0,
+            .preamble = null,
+            .data_size = null,
+            .codec_id = null,
+            .number_data = null,
+            .avl_data = AvlData.init(),
+            .crc16 = null,
+            .number_data_2 = null,
         };
     }
 };

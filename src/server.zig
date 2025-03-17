@@ -1,9 +1,10 @@
-const std = @import("std");
-const Parser = @import("parser/parser.zig").Parser;
-const TeltonikaData = @import("model/teltonika_data.zig").TeltonikaData;
-const imei_handler = @import("parser/teltonika/imei_handler.zig").imei_handler;
+const std: type = @import("std");
+const Parser: type = @import("teltonika/parser.zig").Parser;
+const TeltonikaData: type = @import("model/teltonika_data.zig").TeltonikaData;
+const imei_handler = @import("teltonika/imei_handler.zig").imei_handler;
+const isValidChecksum = @import("teltonika/validate_checksum.zig").isValidChecksum;
 
-pub const TcpServer = struct {
+pub const TcpServer: type = struct {
     address: std.net.Address,
     server: std.net.Server,
 
@@ -28,26 +29,34 @@ pub const TcpServer = struct {
             std.debug.print("New connection from {}\n", .{conn.address});
 
             var buffer: [1024]u8 = undefined;
-            const bytes_read = try conn.stream.read(&buffer);
+            const bytes_read: usize = try conn.stream.read(&buffer);
             if (bytes_read <= 0) return;
-            const packet_imei = buffer[0..bytes_read];
+            const packet_imei: []u8 = buffer[0..bytes_read];
 
-            const imei_int = imei_handler(packet_imei);
+            const imei_int: u64 = imei_handler(packet_imei);
             std.debug.print("Recived IMEI: {}\n", .{imei_int});
 
-            if (imei_int != 0) {
-                _ = try conn.stream.write(&[_]u8{0x01});
-            } else {
-                _ = try conn.stream.write(&[_]u8{0x00});
-                return;
+            switch (imei_int) {
+                0 => {
+                    _ = try conn.stream.write(&[_]u8{0x00});
+                    continue;
+                },
+                else => {
+                    _ = try conn.stream.write(&[_]u8{0x01});
+                },
             }
 
             var next_buffer: [1024]u8 = undefined;
-            const next_bytes_read = try conn.stream.read(&next_buffer);
-            var packet_data = next_buffer[0..next_bytes_read];
+            const next_bytes_read: usize = try conn.stream.read(&next_buffer);
+            var packet_data: []u8 = next_buffer[0..next_bytes_read];
 
             if (packet_data.len == 0) {
                 std.debug.print("Received empty packet data. Ignoring...\n", .{});
+                continue;
+            }
+
+            if (!isValidChecksum(packet_data)) {
+                std.debug.print("Invalid checksum. Discarding packet.\n", .{});
                 continue;
             }
 
@@ -61,7 +70,7 @@ pub const TcpServer = struct {
 
             std.debug.print("\n", .{});
 
-            const sending = try Parser.init(&packet_data, imei_int);
+            const sending: TeltonikaData = try Parser.init(&packet_data, imei_int);
 
             handler(sending);
         }
@@ -69,5 +78,20 @@ pub const TcpServer = struct {
 };
 
 pub fn defaultHandler(teltonika_data: TeltonikaData) void {
-    std.debug.print("Received message of type {}:\n\n", .{teltonika_data});
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer {
+        const leak_status = gpa.deinit();
+        if (leak_status != .ok) {
+            std.log.err("Memory leak detected", .{});
+        }
+    }
+
+    const json_string: []u8 = std.json.stringifyAlloc(allocator, teltonika_data, .{}) catch |err| {
+        std.log.err("Error stringifying JSON: {s}", .{@errorName(err)});
+        return;
+    };
+    defer allocator.free(json_string);
+
+    std.log.info("JSON: {s}", .{json_string});
 }

@@ -1,11 +1,11 @@
-const std = @import("std");
+const std: type = @import("std");
 
 pub fn parseDataField(packet_data: *[]u8) !u32 {
-    const data = packet_data.*;
+    if (packet_data.*.len < 4) return error.InvalidData;
 
-    if (packet_data.len < 4) return error.InvalidData;
+    const data_field: *[4]u8 = packet_data.*[0..4];
 
-    const data_field = data[0..4];
+    packet_data.* = packet_data.*[4..];
 
     return (@as(u32, data_field[0]) << 24) |
         (@as(u32, data_field[1]) << 16) |

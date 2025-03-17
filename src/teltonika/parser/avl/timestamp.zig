@@ -1,10 +1,10 @@
-const std = @import("std");
+const std: type = @import("std");
 
 pub fn parseTimestamp(packet_data: *[]u8) !u64 {
-    const data = packet_data.*;
+    if (packet_data.*.len <= 8) return error.InvalidData;
+    const timestamp_bytes: *[8]u8 = packet_data.*[0..8];
 
-    if (data.len <= 8) return error.InvalidData;
-    const timestamp_bytes = data[0..8];
+    packet_data.* = packet_data.*[8..];
 
     return (@as(u64, timestamp_bytes[0]) << 56) |
         (@as(u64, timestamp_bytes[1]) << 48) |
