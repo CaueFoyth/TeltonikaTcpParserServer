@@ -1,10 +1,10 @@
 pub const GpsElement: type = struct {
-    latitude: ?*[4]u8,
-    longitude: ?*[4]u8,
-    altitude: ?*[2]u8,
-    angle: ?*[2]u8,
-    satellites: ?*[1]u8,
-    speed: ?*[2]u8,
+    latitude: ?[]const u8,
+    longitude: ?[]const u8,
+    altitude: ?i16,
+    angle: ?u16,
+    satellites: ?u8,
+    speed: ?u16,
 
     pub fn init() GpsElement {
         return GpsElement{

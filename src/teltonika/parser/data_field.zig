@@ -1,14 +1,14 @@
 const std: type = @import("std");
 
-pub fn parseDataField(packet_data: *[]u8) !u32 {
-    if (packet_data.*.len < 4) return error.InvalidData;
+pub fn parseDataField(packet_data: []u8, cursor: *usize) !u32 {
+    const start = cursor.*;
+    if (start + 4 > packet_data.len) return error.InvalidDataField;
 
-    const data_field: *[4]u8 = packet_data.*[0..4];
+    const data_size = (@as(u32, packet_data[start]) << 24) |
+        (@as(u32, packet_data[start + 1]) << 16) |
+        (@as(u32, packet_data[start + 2]) << 8) |
+        (@as(u32, packet_data[start + 3]));
+    cursor.* += 4;
 
-    packet_data.* = packet_data.*[4..];
-
-    return (@as(u32, data_field[0]) << 24) |
-        (@as(u32, data_field[1]) << 16) |
-        (@as(u32, data_field[2]) << 8) |
-        (@as(u32, data_field[3]));
+    return data_size;
 }

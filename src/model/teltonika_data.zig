@@ -7,8 +7,8 @@ pub const TeltonikaData: type = struct {
     codec_id: ?u8,
     number_data: ?u8,
     avl_data: AvlData,
-    crc16: ?u32,
     number_data_2: ?u8,
+    crc16: ?u32,
 
     pub fn init(imei: u64) TeltonikaData {
         return TeltonikaData{
@@ -18,8 +18,8 @@ pub const TeltonikaData: type = struct {
             .codec_id = null,
             .number_data = null,
             .avl_data = AvlData.init(),
-            .crc16 = null,
             .number_data_2 = null,
+            .crc16 = null,
         };
     }
 };
