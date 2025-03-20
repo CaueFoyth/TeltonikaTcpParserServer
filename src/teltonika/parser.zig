@@ -1,5 +1,6 @@
 const std = @import("std");
 const TeltonikaData = @import("../model/teltonika_data.zig").TeltonikaData;
+const AvlData = @import("../model/avl_data.zig").AvlData;
 const parsePreamble = @import("parser/preamble.zig").parsePreamble;
 const parseDataField = @import("parser/data_field.zig").parseDataField;
 const parseCodecId = @import("parser/codec.zig").parseCodecId;
@@ -16,9 +17,15 @@ pub const Parser = struct {
         data.data_size = try parseDataField(packet_data.*, &cursor);
         data.codec_id = try parseCodecId(packet_data.*, &cursor);
         data.number_data = try parseNumberData(packet_data.*, &cursor);
-        try Avl.init(&data.avl_data, packet_data.*, &cursor, allocator);
-        // data.crc16 = try parseCrc16(packet_data, &cursor);
-        // data.number_data_2 = try parseNumberData(packet_data, &cursor, 2);
+        const avl_data_count = data.number_data orelse 0;
+        data.avl_data_list = try allocator.alloc(AvlData, avl_data_count);
+        if (data.avl_data_list) |avl_data_list| {
+            for (avl_data_list) |*avl_data| {
+                try Avl.init(avl_data, packet_data.*, &cursor, allocator);
+            }
+        }
+        data.crc16 = try parseCrc16(packet_data.*, &cursor);
+        data.number_data_2 = try parseNumberData(packet_data.*, &cursor);
 
         packet_data.* = packet_data.*[cursor..];
 

@@ -87,7 +87,7 @@ pub const TcpServer = struct {
         };
         conn.stream.writeAll(response) catch return;
 
-        var packet_buffer: [1024]u8 = undefined;
+        var packet_buffer: [2048]u8 = undefined;
         const packet_bytes_read = conn.stream.read(&packet_buffer) catch |err| {
             if (comptime std.debug.runtime_safety) {
                 std.debug.print("Packet read error: {}\n", .{err});
@@ -125,18 +125,6 @@ pub const TcpServer = struct {
             return;
         };
         handler(teltonika_data, conn_allocator);
-
-        std.debug.print("Packet Data Missing (hex): ", .{});
-        for (packet_data) |byte| {
-            std.debug.print("{x:0>2} ", .{byte});
-        }
-        if (comptime std.debug.runtime_safety) {
-            std.debug.print("Packet Data Missing (hex): ", .{});
-            for (packet_data) |byte| {
-                std.debug.print("{x:0>2} ", .{byte});
-            }
-            std.debug.print("\n", .{});
-        }
     }
 };
 
