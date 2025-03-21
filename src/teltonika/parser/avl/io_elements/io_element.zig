@@ -1,5 +1,6 @@
 const std = @import("std");
 const IoElement: type = @import("../../../../model/io_element.zig").IoElement;
+const getProperty = @import("./mapping_io.zig").getProperty;
 
 pub const IoElementParser = struct {
     pub fn parseIoElements(packet_data: []u8, cursor: *usize, allocator: std.mem.Allocator) ![]IoElement {
@@ -48,9 +49,8 @@ pub const IoElementParser = struct {
 
                 var io_element_instance = try IoElement.init();
                 io_element_instance.id = event_id;
-                io_element_instance.property = "io_element";
+                io_element_instance.property = try getProperty(event_id);
                 io_element_instance.value = event_value;
-                io_element_instance.formated_value = "Teste";
                 io_elements_array[index] = io_element_instance;
                 index += 1;
             }
@@ -85,7 +85,7 @@ pub const IoElementParser = struct {
 
             var io_element_instance = try IoElement.init();
             io_element_instance.id = event_id;
-            io_element_instance.property = "io_element";
+            io_element_instance.property = try getProperty(event_id);
 
             if (event_value_size <= @sizeOf(u64)) {
                 var temp_value: u64 = 0;
@@ -95,8 +95,19 @@ pub const IoElementParser = struct {
                 io_element_instance.value = temp_value;
             } else {
                 io_element_instance.value = null;
+                const hex_value = try allocator.alloc(u8, event_value_size * 2);
+
+                if (comptime std.debug.runtime_safety) {
+                    var hex_index: usize = 0;
+                    for (packet_data[cursor.* - event_value_size .. cursor.*]) |byte| {
+                        hex_value[hex_index] = if ((byte >> 4) < 10) (byte >> 4) + '0' else (byte >> 4) - 10 + 'a';
+                        hex_value[hex_index + 1] = if ((byte & 0xF) < 10) (byte & 0xF) + '0' else (byte & 0xF) - 10 + 'a';
+                        hex_index += 2;
+                    }
+                }
+
+                io_element_instance.hex_value = hex_value[0 .. event_value_size * 2];
             }
-            io_element_instance.formated_value = "Teste";
 
             io_elements_array[index] = io_element_instance;
             index += 1;
