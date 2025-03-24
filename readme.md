@@ -23,7 +23,7 @@ The objective of this project is to develop a TCP server capable of parsing data
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/TeltonikaTcpParserServer.git
+    git clone https://github.com/CaueFoyth/TeltonikaTcpParserServer.git
     cd TeltonikaTcpParserServer
     ```
 
